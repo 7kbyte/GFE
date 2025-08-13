@@ -1,38 +1,73 @@
-.App {
-  text-align: center;
+/* App.css - 新增的页首样式 */
+
+/* Header Styles */
+.main-header {
+  background-color: var(--secondary-bg); /* 使用白色背景 */
+  padding: 15px 0; /* 上下内边距，左右无 */
+  box-shadow: 0 4px 15px var(--shadow-light); /* 柔和的底部阴影 */
+  position: sticky; /* 粘性定位，当页面滚动时，页首会固定在顶部 */
+  top: 0; /* 粘在顶部 */
+  z-index: 1000; /* 确保在其他内容之上 */
+  border-bottom: 1px solid var(--border-color); /* 底部细边框，增加层次感 */
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+.header-content {
+  max-width: 960px; /* 与 app-container 相同的最大宽度，保持内容对齐 */
+  margin: 0 auto; /* 左右自动居中 */
+  padding: 0 30px; /* 左右内边距，防止内容贴边 */
+  display: flex; /* 使用 Flexbox 布局 */
+  justify-content: space-between; /* 内容两端对齐 (Logo在左，未来其他元素在右) */
+  align-items: center; /* 垂直居中 */
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
+.header-logo {
+  font-family: var(--font-family-base); /* 使用全局定义的字体 */
+  font-size: 2.2em; /* Logo 字体大小 */
+  font-weight: 800; /* 粗体 */
+  color: var(--accent-color); /* Logo 颜色使用强调色 */
+  text-decoration: none; /* 移除下划线 */
+  display: flex; /* 允许图标和文本对齐 */
   align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+  gap: 8px; /* 图标和文本之间的间距 */
+  transition: color 0.2s ease-in-out; /* 颜色过渡效果 */
 }
 
-.App-link {
-  color: #61dafb;
+.header-logo:hover {
+  color: var(--accent-hover-color); /* 悬停时颜色变深 */
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
+/* 如果你使用了图片作为 Logo */
+.header-logo .logo-image {
+  height: 40px; /* 根据你的图片调整高度 */
+  width: auto;
+  margin-right: 5px; /* 图片和文字的间距 */
+}
+
+/* 响应式设计：媒体查询对页首进行调整 */
+
+/* 针对中等屏幕（平板电脑，最大宽度 768px） */
+@media (max-width: 768px) {
+  .main-header {
+    padding: 12px 0;
   }
-  to {
-    transform: rotate(360deg);
+  .header-content {
+    padding: 0 25px;
+  }
+  .header-logo {
+    font-size: 1.8em;
+  }
+}
+
+/* 针对小屏幕（手机，最大宽度 480px） */
+@media (max-width: 480px) {
+  .main-header {
+    padding: 10px 0;
+  }
+  .header-content {
+    padding: 0 15px;
+  }
+  .header-logo {
+    font-size: 1.5em;
+    gap: 5px;
   }
 }

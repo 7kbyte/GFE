@@ -1,13 +1,294 @@
-body {
+/* App.css */
+
+/* 引入 Google Font - Nunito */
+/* Nunito 字体圆润友好，非常适合卡通和清新的风格 */
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
+
+/* 定义 CSS 变量，便于统一管理颜色、字体等 */
+:root {
+  --primary-bg: #f5f7fa; /* 主背景色：非常浅的蓝色/灰色 */
+  --secondary-bg: #ffffff; /* 次背景色：白色，用于卡片/容器 */
+  --text-color: #34495e; /* 主要文本颜色：深蓝色/灰色 */
+  --accent-color: #74b9ff; /* 主强调色：柔和的蓝色 */
+  --accent-hover-color: #5ea8f0; /* 强调色悬停状态：略深的蓝色 */
+  --border-color: #e0e6ed; /* 边框颜色：浅灰色 */
+  --error-color: #e74c3c; /* 错误信息颜色：红色 */
+  --shadow-light: rgba(0, 0, 0, 0.15); /* 轻微的阴影 */
+  --font-family-base: 'Nunito', sans-serif; /* 基础字体 */
+  --border-radius-base: 12px; /* 基础圆角 */
+}
+
+/* 全局样式 */
+html, body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
+  padding: 0;
+  box-sizing: border-box; /* 盒模型为 border-box，便于布局 */
+  font-family: var(--font-family-base);
+  background-color: var(--primary-bg);
+  color: var(--text-color);
+  line-height: 1.6; /* 行高，提高可读性 */
+  -webkit-font-smoothing: antialiased; /* 字体抗锯齿，使字体更平滑 */
   -moz-osx-font-smoothing: grayscale;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+/* 应用容器样式 */
+.app-container {
+  max-width: 1200px; /* 最大宽度，防止在宽屏上内容过长 */
+  margin: 40px auto; /* 上下外边距，左右自动居中 */
+  padding: 30px;
+  background-color: var(--secondary-bg);
+  border-radius: var(--border-radius-base); /* 圆角 */
+  box-shadow: 0 8px 25px var(--shadow-light); /* 柔和的阴影，增加层次感 */
+  text-align: center; /* 容器内文本居中 */
+  transition: all 0.3s ease-in-out; /* 过渡效果 */
+}
+
+/* 错误状态下的容器样式 */
+.app-container.error {
+  color: var(--error-color);
+  border: 1px solid var(--error-color);
+  background-color: #ffebeb; /* 浅红色背景，提示错误 */
+}
+
+/* 标题样式 */
+h1, h2, h3 {
+  color: var(--accent-color); /* 标题使用强调色 */
+  margin-top: 0;
+  margin-bottom: 20px;
+  font-weight: 800; /* 更粗的字体，突出标题 */
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.05); /* 轻微的文本阴影 */
+}
+
+h1 {
+  font-size: 3em; /* 主标题更大 */
+  letter-spacing: 1px; /* 字母间距 */
+}
+
+h2 {
+  font-size: 2.4em;
+  margin-top: 35px; /* H2 上方更多空间 */
+}
+
+h3 {
+  font-size: 1.9em;
+  color: var(--text-color); /* H3 可以使用主文本色 */
+}
+
+/* 段落样式 */
+p {
+  margin-bottom: 15px;
+  font-size: 1.1em;
+  color: #555;
+}
+
+/* 链接样式 */
+a {
+  color: var(--accent-color);
+  text-decoration: none; /* 默认无下划线 */
+  transition: color 0.2s ease-in-out;
+}
+
+a:hover {
+  color: var(--accent-hover-color);
+  text-decoration: underline; /* 悬停时显示下划线 */
+}
+
+/* 按钮链接样式 */
+.button-link {
+  display: inline-block; /* 使链接表现得像块级元素，但允许并排 */
+  background-color: var(--accent-color);
+  color: #ffffff; /* 按钮文字为白色 */
+  padding: 14px 30px;
+  border-radius: 30px; /* 椭圆形按钮 */
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 1.1em;
+  transition: background-color 0.2s ease-in-out, transform 0.15s ease-in-out, box-shadow 0.2s ease-in-out;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15); /* 按钮阴影 */
+  margin-top: 15px;
+  margin-bottom: 25px;
+  letter-spacing: 0.5px;
+}
+
+.button-link:hover {
+  background-color: var(--accent-hover-color);
+  transform: translateY(-3px); /* 悬停时轻微上浮效果 */
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2); /* 悬停时阴影加深 */
+  text-decoration: none; /* 悬停时移除下划线 */
+}
+
+/* 列表（游戏列表）样式 */
+ul {
+  list-style: none; /* 移除默认列表点 */
+  padding: 0;
+  margin: 25px 0;
+  display: flex; /* 使用 Flexbox 布局 */
+  flex-direction: column; /* 垂直排列 */
+  gap: 15px; /* 列表项之间的间距 */
+}
+
+li {
+  background-color: var(--primary-bg); /* 列表项背景色 */
+  padding: 18px 25px;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px var(--shadow-light);
+  text-align: left; /* 列表项内文本左对齐 */
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+li:hover {
+  transform: translateY(-5px); /* 悬停时上浮效果 */
+  box-shadow: 0 8px 20px var(--shadow-light);
+}
+
+li a {
+  font-size: 1.3em;
+  font-weight: 600;
+  color: var(--text-color); /* 列表项链接文本颜色 */
+  display: block; /* 使整个列表项区域可点击 */
+}
+
+li a:hover {
+  color: var(--accent-color); /* 悬停时改变颜色 */
+  text-decoration: none;
+}
+
+/* 备注区域样式 */
+.remarks {
+  background-color: var(--primary-bg);
+  padding: 25px;
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+  margin-top: 30px;
+  text-align: left;
+  box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.05); /* 内阴影效果 */
+}
+
+.remarks p {
+  margin-bottom: 0;
+  font-style: italic;
+  color: #666;
+  font-size: 1em;
+}
+
+/* 图表容器样式 */
+.chart-container {
+  position: relative;
+  width: 100%; /* 占据父容器的全部宽度 */
+  max-width: 550px; /* 图表最大宽度 */
+  height: 450px; /* 图表固定高度 */
+  margin: 35px auto; /* 居中显示 */
+  background-color: var(--secondary-bg);
+  padding: 25px;
+  border-radius: var(--border-radius-base);
+  box-shadow: 0 8px 25px var(--shadow-light);
+  display: flex; /* 使用 Flexbox 确保 Chart.js canvas 居中 */
+  justify-content: center;
+  align-items: center;
+}
+
+/* 响应式设计：媒体查询 */
+
+/* 针对中等屏幕（平板电脑，最大宽度 768px） */
+@media (max-width: 768px) {
+  .app-container {
+    margin: 25px auto;
+    padding: 25px;
+    border-radius: 10px;
+  }
+
+  h1 {
+    font-size: 2.5em;
+  }
+
+  h2 {
+    font-size: 2em;
+    margin-top: 30px;
+  }
+
+  h3 {
+    font-size: 1.7em;
+  }
+
+  .button-link {
+    padding: 12px 25px;
+    font-size: 1em;
+  }
+
+  li {
+    padding: 15px 20px;
+  }
+
+  li a {
+    font-size: 1.2em;
+  }
+
+  .chart-container {
+    height: 400px; /* 中等屏幕下图表高度略减 */
+    padding: 20px;
+  }
+}
+
+/* 针对小屏幕（手机，最大宽度 480px） */
+@media (max-width: 480px) {
+  .app-container {
+    margin: 15px auto;
+    padding: 15px;
+    border-radius: 8px;
+  }
+
+  h1 {
+    font-size: 2em;
+  }
+
+  h2 {
+    font-size: 1.7em;
+    margin-top: 25px;
+  }
+
+  h3 {
+    font-size: 1.4em;
+  }
+
+  .button-link {
+    display: block; /* 在小屏幕上按钮独占一行 */
+    width: fit-content; /* 宽度适应内容 */
+    margin-left: auto;
+    margin-right: auto; /* 居中 */
+    padding: 10px 20px;
+    font-size: 0.9em;
+  }
+
+  li {
+    padding: 12px 15px;
+  }
+
+  li a {
+    font-size: 1.1em;
+  }
+
+  .chart-container {
+    height: 350px; /* 小屏幕下图表高度进一步减小 */
+    padding: 15px;
+  }
+}
+
+/* 针对更小的屏幕（例如 iPhone SE，最大宽度 375px） */
+@media (max-width: 375px) {
+  h1 {
+    font-size: 1.7em;
+  }
+
+  h2 {
+    font-size: 1.4em;
+  }
+
+  h3 {
+    font-size: 1.2em;
+  }
+
+  .chart-container {
+    height: 300px; /* 确保在极小屏幕下也能显示 */
+    padding: 10px;
+  }
 }
