@@ -1,0 +1,347 @@
+/* 导入 Google Fonts - Nunito 字体，以实现圆润清晰的字体效果 */
+/* 如果你不希望使用 Google Fonts，可以删除此 @import 规则，字体将回退到系统默认的 sans-serif 字体 */
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700&display=swap');
+
+/* 全局基础样式 */
+body {
+    font-family: 'Nunito', 'Helvetica Neue', Arial, sans-serif; /* 使用 Nunito 字体，提供圆润感 */
+    line-height: 1.6;
+    color: #333; /* 主体文字颜色 */
+    background-color: #f8fbfd; /* 非常浅的蓝色背景，营造清新感 */
+    margin: 0;
+    padding: 0;
+    -webkit-font-smoothing: antialiased; /* 字体抗锯齿，使文字更平滑 */
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* 应用容器 */
+.app-container {
+    max-width: 1200px; /* 最大宽度，保持内容居中 */
+    margin: 40px auto; /* 上下外边距，左右自动居中 */
+    padding: 25px;
+    background-color: #ffffff; /* 白色背景 */
+    border-radius: 12px; /* 圆角边框 */
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08); /* 柔和的阴影，增加层次感 */
+    box-sizing: border-box; /* 盒模型为边框盒 */
+}
+
+h1 {
+    text-align: center;
+    color: #2c3e50; /* 标题颜色，深蓝色调 */
+    margin-bottom: 35px;
+    font-size: 2.8em; /* 标题字号 */
+    font-weight: 700; /* 粗体 */
+    letter-spacing: -0.02em; /* 字间距微调 */
+}
+
+/* 筛选和排序容器 */
+.filters-container {
+    display: flex;
+    flex-wrap: wrap; /* 允许换行 */
+    gap: 20px; /* 元素间距 */
+    margin-bottom: 30px;
+    align-items: center;
+    justify-content: space-between; /* 搜索框和排序控件两端对齐 */
+}
+
+/* 搜索输入框 */
+.search-input {
+    flex-grow: 1; /* 占据剩余空间 */
+    padding: 14px 20px;
+    border: 1px solid #e0e6ed; /* 浅灰色边框 */
+    border-radius: 10px; /* 圆角 */
+    font-size: 1.05em;
+    outline: none; /* 移除焦点时的外边框 */
+    transition: all 0.3s ease; /* 平滑过渡效果 */
+    max-width: 450px; /* 限制最大宽度 */
+    box-sizing: border-box;
+}
+
+.search-input::placeholder {
+    color: #aebfd4; /* 占位符颜色 */
+}
+
+.search-input:focus {
+    border-color: #6a9acb; /* 焦点时边框颜色 */
+    box-shadow: 0 0 0 4px rgba(106, 154, 203, 0.2); /* 焦点时阴影 */
+}
+
+/* 排序控件 */
+.sort-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    align-items: center;
+}
+
+.sort-controls label {
+    font-size: 0.98em;
+    color: #555;
+    white-space: nowrap; /* 防止标签换行 */
+}
+
+.sort-controls select {
+    padding: 12px 18px;
+    border: 1px solid #e0e6ed;
+    border-radius: 10px;
+    background-color: #fcfdff; /* 浅色背景 */
+    font-size: 0.98em;
+    color: #333;
+    appearance: none; /* 移除默认的下拉箭头 */
+    background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%236a9acb%22%20d%3D%22M287%2C197.9L159.3%2C69.2c-4.7-4.7-12.3-4.7-17%2C0L5.4%2C197.9c-4.7%2C4.7-4.7%2C12.3%2C0%2C17l14.1%2C14.1c4.7%2C4.7%2C12.3%2C4.7%2C17%2C0l118.3-118.3l118.3%2C118.3c4.7%2C4.7%2C12.3%2C4.7%2C17%2C0l14.1-14.1C291.7%2C210.2%2C291.7%2C202.6%2C287%2C197.9z%22%2F%3E%3C%2Fsvg%3E'); /* 自定义下拉箭头 */
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 14px auto;
+    cursor: pointer;
+    transition: border-color 0.3s ease;
+    outline: none;
+}
+
+.sort-controls select:focus {
+    border-color: #6a9acb;
+}
+
+/* 游戏列表 */
+.game-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); /* 响应式网格布局 */
+    gap: 30px; /* 卡片间距 */
+    margin-top: 30px;
+}
+
+/* 游戏卡片链接 */
+.game-card-link {
+    text-decoration: none; /* 移除下划线 */
+    color: inherit; /* 继承父元素颜色 */
+}
+
+/* 游戏卡片 */
+.game-card {
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08); /* 柔和阴影 */
+    overflow: hidden; /* 隐藏超出部分 */
+    display: flex;
+    flex-direction: column; /* 图片在上，内容在下 */
+    transition: transform 0.3s ease, box-shadow 0.3s ease; /* 平滑过渡效果 */
+    height: 100%; /* 确保卡片高度一致 */
+}
+
+.game-card:hover {
+    transform: translateY(-7px); /* 鼠标悬停时上浮 */
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15); /* 悬停时阴影加深 */
+}
+
+/* 游戏卡片图片 */
+.game-card-image {
+    width: 100%;
+    height: 220px; /* 固定图片高度 */
+    object-fit: cover; /* 裁剪图片以填充容器 */
+    border-bottom: 1px solid #eee; /* 底部边框 */
+    border-radius: 12px 12px 0 0; /* 顶部圆角 */
+}
+
+/* 游戏卡片内容区域 */
+.game-card-content {
+    padding: 20px;
+    flex-grow: 1; /* 允许内容区域占据剩余空间 */
+    display: flex;
+    flex-direction: column;
+}
+
+.game-card-content h2 {
+    font-size: 1.6em;
+    color: #2c3e50;
+    margin-top: 0;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 不换行 */
+    overflow: hidden; /* 隐藏超出部分 */
+    text-overflow: ellipsis; /* 显示省略号 */
+}
+
+.game-card-content p {
+    font-size: 0.98em;
+    color: #666;
+    margin-bottom: 10px;
+}
+
+/* 评分高亮 */
+.score-highlight {
+    font-weight: bold;
+    color: #3498db; /* 亮蓝色，突出评分 */
+    font-size: 1.15em;
+}
+
+/* 游戏标签 */
+.game-tags {
+    font-size: 0.88em;
+    color: #888;
+    margin-top: auto; /* 将标签推到底部 */
+    margin-bottom: 10px;
+}
+
+/* 游戏评价 */
+.game-card-review {
+    font-style: italic;
+    color: #777;
+    margin-top: 8px;
+    line-height: 1.5;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 3; /* 限制评价显示3行 */
+    -webkit-box-orient: vertical;
+}
+
+/* 分页控制 */
+.pagination-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 50px;
+    gap: 20px; /* 元素间距 */
+}
+
+.pagination-controls button {
+    padding: 12px 25px;
+    border: none;
+    border-radius: 10px;
+    background-color: #3498db; /* 蓝色按钮 */
+    color: white;
+    font-size: 1.05em;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    box-shadow: 0 4px 10px rgba(52, 152, 219, 0.2);
+}
+
+.pagination-controls button:hover:not(:disabled) {
+    background-color: #2980b9; /* 悬停时颜色变深 */
+    transform: translateY(-3px); /* 悬停时上浮 */
+}
+
+.pagination-controls button:disabled {
+    background-color: #cccccc; /* 禁用时灰色 */
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+}
+
+.pagination-controls span {
+    font-size: 1.05em;
+    color: #555;
+    white-space: nowrap;
+}
+
+/* 加载和错误状态 */
+.app-container.error {
+    color: #e74c3c; /* 错误信息红色 */
+    font-weight: bold;
+    text-align: center;
+    font-size: 1.2em;
+}
+
+.app-container.loading {
+    text-align: center;
+    font-size: 1.2em;
+    color: #555;
+}
+
+/* 没有找到游戏时的提示 */
+.app-container > p {
+    text-align: center;
+    font-size: 1.1em;
+    color: #777;
+    margin-top: 50px;
+}
+
+/* 响应式设计 */
+@media (max-width: 992px) {
+    .game-list {
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 25px;
+    }
+    .app-container {
+        padding: 20px;
+        margin: 30px auto;
+    }
+    h1 {
+        font-size: 2.4em;
+    }
+}
+
+@media (max-width: 768px) {
+    .filters-container {
+        flex-direction: column; /* 垂直排列 */
+        align-items: stretch; /* 填充宽度 */
+        gap: 15px;
+    }
+
+    .search-input {
+        max-width: 100%; /* 搜索框全宽 */
+    }
+
+    .sort-controls {
+        flex-direction: column; /* 垂直排列 */
+        align-items: flex-start; /* 左对齐 */
+        width: 100%;
+        gap: 10px;
+    }
+    .sort-controls label,
+    .sort-controls select {
+        width: 100%; /* 让选择框和标签占据全宽 */
+        box-sizing: border-box;
+    }
+
+    .game-list {
+        grid-template-columns: 1fr; /* 单列布局 */
+        gap: 20px;
+    }
+    .game-card-image {
+        height: 180px;
+    }
+    .game-card-content h2 {
+        font-size: 1.4em;
+    }
+    .pagination-controls {
+        flex-direction: column;
+        gap: 15px;
+    }
+}
+
+@media (max-width: 480px) {
+    .app-container {
+        margin: 15px auto;
+        padding: 15px;
+    }
+    h1 {
+        font-size: 2em;
+        margin-bottom: 25px;
+    }
+    .search-input,
+    .sort-controls select,
+    .pagination-controls button {
+        padding: 10px 15px;
+        font-size: 0.95em;
+    }
+    .game-card-image {
+        height: 150px;
+    }
+    .game-card-content h2 {
+        font-size: 1.2em;
+    }
+}
+
+.chart-container {
+  position: relative;
+  width: 100%; /* 占据父容器的全部宽度 */
+  max-width: 550px; /* 图表最大宽度 */
+  height: 450px; /* 图表固定高度 */
+  margin: 35px auto; /* 居中显示 */
+  background-color: var(--secondary-bg);
+  padding: 25px;
+  border-radius: var(--border-radius-base);
+  box-shadow: 0 8px 25px var(--shadow-light);
+  display: flex; /* 使用 Flexbox 确保 Chart.js canvas 居中 */
+  justify-content: center;
+  align-items: center;
+}

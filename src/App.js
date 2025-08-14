@@ -4,8 +4,6 @@ import HomePage from './pages/HomePage';
 import GameDetailPage from './pages/GameDetailPage';
 import AdminPage from './pages/AdminPage';
 import Header from './components/Header'; // 引入新的 Header 组件
-import './index.css'; // 引入全局样式
-import './App.css';
 
 function App() {
   return (

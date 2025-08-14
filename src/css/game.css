@@ -1,0 +1,220 @@
+/* 游戏详情页特有的样式 */
+.game-detail-page {
+    /* 这是一个标记类，本身不添加太多样式，主要用于区分 */
+}
+
+/* 游戏头部区域：图片和标题 */
+.game-header {
+    text-align: center;
+    margin-bottom: 40px;
+    display: flex;
+    flex-direction: column; /* 垂直排列 */
+    align-items: center; /* 居中对齐 */
+}
+
+/* 游戏详情图片 */
+.game-detail-image {
+    max-width: 350px; /* 限制图片最大宽度 */
+    height: auto;
+    border-radius: 12px;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1); /* 柔和阴影 */
+    margin-bottom: 25px;
+    object-fit: cover; /* 裁剪图片以填充容器，保持比例 */
+}
+
+/* 游戏标题 */
+.game-header h1 {
+    font-size: 3.2em; /* 详情页标题更大更醒目 */
+    color: #2c3e50;
+    margin-top: 0;
+    margin-bottom: 0;
+    font-weight: 700;
+    letter-spacing: -0.03em; /* 字间距微调 */
+    line-height: 1.2;
+}
+
+/* 各个内容区域的二级标题 */
+h2 {
+    color: #34495e; /* 略深于正文的颜色 */
+    font-size: 2em;
+    margin-top: 40px;
+    margin-bottom: 25px;
+    border-bottom: 2px solid #e0e6ed; /* 底部细线分隔，增加整洁感 */
+    padding-bottom: 10px;
+    font-weight: 600;
+}
+
+/* 综合评分的标题 */
+h3 {
+    color: #3498db; /* 亮蓝色，突出综合评分 */
+    font-size: 1.8em;
+    text-align: center;
+    margin-top: 25px;
+    margin-bottom: 30px;
+    font-weight: 700;
+}
+
+/* 游戏元数据（发行年份、开发者等） */
+.game-meta {
+    background-color: #f9fcff; /* 浅色背景 */
+    border-radius: 10px;
+    padding: 25px 30px;
+    margin-bottom: 40px;
+    border: 1px solid #eef2f7; /* 浅边框 */
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* 响应式网格布局 */
+    gap: 15px 30px; /* 行和列间距 */
+}
+
+.game-meta p {
+    margin: 0;
+    font-size: 1.05em;
+    color: #555;
+}
+
+.game-meta p strong {
+    color: #333;
+    font-weight: 600;
+    margin-right: 8px;
+}
+
+/* 各项评分网格 */
+.ratings-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); /* 更紧凑的网格 */
+    gap: 15px 25px;
+    background-color: #f9fcff;
+    border-radius: 10px;
+    padding: 25px 30px;
+    border: 1px solid #eef2f7;
+}
+
+.ratings-grid p {
+    margin: 0;
+    font-size: 1.05em;
+    color: #555;
+    display: flex; /* 让文字和冒号对齐 */
+    align-items: center;
+}
+
+.ratings-grid p strong {
+    color: #333;
+    font-weight: 600;
+    margin-right: 8px;
+}
+
+/* 评价文本区域 */
+.review-text {
+    background-color: #f9fcff;
+    border-radius: 10px;
+    padding: 25px 30px;
+    margin-top: 20px;
+    border: 1px solid #eef2f7;
+    line-height: 1.8; /* 增加行高，提升可读性 */
+}
+
+.review-text p {
+    margin: 0;
+    font-size: 1.1em;
+    color: #444;
+    white-space: pre-wrap; /* 保留文本中的换行和空格 */
+}
+
+
+/* 加载和错误状态 (与 HomePage 保持一致) */
+.app-container.error {
+    color: #e74c3c;
+    font-weight: bold;
+    text-align: center;
+    font-size: 1.2em;
+}
+
+.app-container.loading {
+    text-align: center;
+    font-size: 1.2em;
+    color: #555;
+}
+
+/* 游戏未找到时的提示 */
+.app-container > p { /* 针对直接子元素 p */
+    text-align: center;
+    font-size: 1.1em;
+    color: #777;
+    margin-top: 50px;
+}
+
+/* 响应式设计 */
+@media (max-width: 992px) {
+    .app-container {
+        padding: 25px;
+        margin: 30px auto;
+    }
+    .game-header h1 {
+        font-size: 2.8em;
+    }
+    h2 {
+        font-size: 1.8em;
+    }
+    h3 {
+        font-size: 1.6em;
+    }
+    .game-meta, .ratings-grid, .review-text {
+        padding: 20px 25px;
+    }
+}
+
+@media (max-width: 768px) {
+    .app-container {
+        padding: 20px;
+        margin: 20px auto;
+    }
+    .game-header h1 {
+        font-size: 2.4em;
+    }
+    .game-detail-image {
+        max-width: 280px;
+    }
+    h2 {
+        font-size: 1.6em;
+        margin-top: 30px;
+        margin-bottom: 20px;
+    }
+    h3 {
+        font-size: 1.4em;
+    }
+    .game-meta, .ratings-grid {
+        grid-template-columns: 1fr; /* 小屏幕下改为单列布局 */
+        gap: 10px;
+        padding: 15px 20px;
+    }
+    .review-text {
+        padding: 15px 20px;
+    }
+    .review-text p {
+        font-size: 1em;
+    }
+}
+
+@media (max-width: 480px) {
+    .app-container {
+        margin: 15px auto;
+        padding: 15px;
+    }
+    .game-header h1 {
+        font-size: 2em;
+    }
+    .game-detail-image {
+        max-width: 220px;
+    }
+    h2 {
+        font-size: 1.4em;
+        margin-top: 25px;
+        margin-bottom: 15px;
+    }
+    h3 {
+        font-size: 1.2em;
+    }
+    .game-meta, .ratings-grid, .review-text {
+        padding: 12px 15px;
+    }
+}
