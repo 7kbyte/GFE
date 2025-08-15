@@ -7,14 +7,12 @@ import {
   deleteGame,
   fetchAllTags,
   deleteTag,
-  // addGameTags, // 这些通常通过游戏创建/更新来处理
-  // deleteGameTag
 } from '../api'; // 确保路径正确
 
 // 导入 Material-UI 组件
 import {
   Container,
-  Box,
+  Box, // 替代 Grid 的主要布局组件
   Typography,
   TextField,
   FormControl,
@@ -22,13 +20,13 @@ import {
   Select,
   MenuItem,
   Button,
-  Grid,
   Paper,
   Divider,
-  Stack,
+  Stack, // 用于水平或垂直堆叠，替代 Grid 的部分功能
   CircularProgress,
   Alert,
-  Snackbar, // 用于替代 alert()
+  Snackbar,
+  Switch,
   TableContainer,
   Table,
   TableHead,
@@ -51,7 +49,7 @@ import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
-import CloseIcon from '@mui/icons-material/Close';
+// import CloseIcon from '@mui/icons-material/Close'; // CloseIcon 未使用，已移除导入
 
 // 辅助函数：将评分转换为浮点数，并确保在有效范围内
 const parseRating = (value) => {
@@ -173,7 +171,7 @@ const AdminPage = () => {
     const ratings = { art_rating, music_rating, story_rating, playability_rating, innovation_rating, performance_rating };
     for (const key in ratings) {
       const value = parseRating(ratings[key]);
-      if (value === null) {
+      if (value === null && ratings[key] !== '') { // 允许空字符串，但如果填写了就必须有效
         return `评分 ${key.replace('_rating', '')} 必须是 0.0 到 10.0 之间的小数。`;
       }
     }
@@ -190,17 +188,23 @@ const AdminPage = () => {
     }
     setError(null); // 清除之前的错误
 
+    // 确保空字符串的评分字段被转换为 null，而不是 0
+    const parseRatingOrNull = (value) => {
+      const num = parseRating(value);
+      return value === '' ? null : num;
+    };
+
     const gameDataToSend = {
       ...gameForm,
       release_year: gameForm.release_year ? parseInt(gameForm.release_year, 10) : null,
       play_time_hours: gameForm.play_time_hours ? parseInt(gameForm.play_time_hours, 10) : null,
-      art_rating: parseRating(gameForm.art_rating),
-      music_rating: parseRating(gameForm.music_rating),
-      story_rating: parseRating(gameForm.story_rating),
-      playability_rating: parseRating(gameForm.playability_rating),
-      innovation_rating: parseRating(gameForm.innovation_rating),
-      performance_rating: parseRating(gameForm.performance_rating),
-      my_overall_score: gameForm.my_overall_score ? parseRating(gameForm.my_overall_score) : null,
+      art_rating: parseRatingOrNull(gameForm.art_rating),
+      music_rating: parseRatingOrNull(gameForm.music_rating),
+      story_rating: parseRatingOrNull(gameForm.story_rating),
+      playability_rating: parseRatingOrNull(gameForm.playability_rating),
+      innovation_rating: parseRatingOrNull(gameForm.innovation_rating),
+      performance_rating: parseRatingOrNull(gameForm.performance_rating),
+      my_overall_score: gameForm.my_overall_score ? parseRatingOrNull(gameForm.my_overall_score) : null,
       tags: gameForm.tags.split(',').map(tag => tag.trim()).filter(tag => tag), // 转换为数组
     };
 
@@ -231,14 +235,15 @@ const AdminPage = () => {
       developer: game.developer || '',
       publisher: game.publisher || '',
       platform: game.platform || '',
-      art_rating: game.art_rating?.toFixed(1) || '',
-      music_rating: game.music_rating?.toFixed(1) || '',
-      story_rating: game.story_rating?.toFixed(1) || '',
-      playability_rating: game.playability_rating?.toFixed(1) || '',
-      innovation_rating: game.innovation_rating?.toFixed(1) || '',
-      performance_rating: game.performance_rating?.toFixed(1) || '',
+      // 如果评分为 null，则显示为空字符串，否则保留一位小数
+      art_rating: game.art_rating !== null ? game.art_rating.toFixed(1) : '',
+      music_rating: game.music_rating !== null ? game.music_rating.toFixed(1) : '',
+      story_rating: game.story_rating !== null ? game.story_rating.toFixed(1) : '',
+      playability_rating: game.playability_rating !== null ? game.playability_rating.toFixed(1) : '',
+      innovation_rating: game.innovation_rating !== null ? game.innovation_rating.toFixed(1) : '',
+      performance_rating: game.performance_rating !== null ? game.performance_rating.toFixed(1) : '',
       review_text: game.review_text || '',
-      my_overall_score: game.my_overall_score?.toFixed(1) || '',
+      my_overall_score: game.my_overall_score !== null ? game.my_overall_score.toFixed(1) : '',
       is_completed: game.is_completed,
       play_time_hours: game.play_time_hours || '',
       tags: game.tags ? game.tags.join(', ') : '', // 将标签数组转为字符串
@@ -269,7 +274,7 @@ const AdminPage = () => {
     // 提示用户标签会在游戏添加/修改时自动创建
     showSnackbar("标签会在添加或修改游戏时自动创建。此处仅用于展示现有标签。", 'info');
     setNewTagName('');
-    loadTags(); // 重新加载标签列表
+    // loadTags(); // 重新加载标签列表 (此处不需要，因为没有实际添加标签的API调用)
   };
 
   const handleDeleteTag = async (tagId) => {
@@ -346,90 +351,82 @@ const AdminPage = () => {
         <Typography variant="h5" component="h2" gutterBottom>
           {editingGameId ? '编辑游戏' : '添加新游戏'}
         </Typography>
-        <Box component="form" onSubmit={handleSubmitGame} sx={{ '& .MuiTextField-root': { mb: 2, mr: 2, width: { xs: '100%', sm: '48%' } } }}>
-          <TextField
-            label="名称"
-            name="name"
-            value={gameForm.name}
-            onChange={handleGameFormChange}
-            required
-            fullWidth // 占据一行
-            sx={{ mb: 2 }}
-          />
-          <TextField
-            label="图片URL"
-            name="image_url"
-            value={gameForm.image_url}
-            onChange={handleGameFormChange}
-            fullWidth
-            sx={{ mb: 2 }}
-          />
-          <Grid container spacing={1}>
-            <Grid item xs={12} sm={12} md={12} sx={{ display: 'flex', alignItems: 'center' }}>
-              <TextField
-                label="发行年份"
-                name="release_year"
-                type="number"
-                value={gameForm.release_year}
-                onChange={handleGameFormChange}
-                fullWidth
-              />
-            </Grid>
-            <Grid item xs={12} sm={12} md={12} sx={{ display: 'flex', alignItems: 'center' }}>
-              <TextField
-                label="开发者"
-                name="developer"
-                value={gameForm.developer}
-                onChange={handleGameFormChange}
-                fullWidth
-              />
-            </Grid>
-            <Grid item xs={12} sm={12} md={12} sx={{ display: 'flex', alignItems: 'center' }}>
-              <TextField
-                label="发行商"
-                name="publisher"
-                value={gameForm.publisher}
-                onChange={handleGameFormChange}
-                fullWidth
-              />
-            </Grid>
-            <Grid item xs={12} sm={12} md={12} sx={{ display: 'flex', alignItems: 'center' }}>
-              <TextField
-                label="平台"
-                name="platform"
-                value={gameForm.platform}
-                onChange={handleGameFormChange}
-                fullWidth
-              />
-            </Grid>
-            <Grid item xs={12} sm={12} md={12} sx={{ display: 'flex', alignItems: 'center' }}>
-              <TextField
-                label="游玩时长 (小时)"
-                name="play_time_hours"
-                type="number"
-                value={gameForm.play_time_hours}
-                onChange={handleGameFormChange}
-                fullWidth
-              />
-            </Grid>
-            <Grid item xs={12} sm={12} md={12} sx={{ display: 'flex', alignItems: 'center' }}>
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={gameForm.is_completed}
-                    onChange={handleGameFormChange}
-                    name="is_completed"
-                  />
-                }
-                label="已通关"
-                sx={{ mt: 1 }}
-              />
-            </Grid>
-          </Grid>
+        {/* 使用 Box 和 Stack 替代 Grid */}
+        <Box component="form" onSubmit={handleSubmitGame}>
+          {/* 前8个栏目，两个一排 */}
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', gap: 2, mb: 2 }}>
+            <TextField
+              label="名称"
+              name="name"
+              value={gameForm.name}
+              onChange={handleGameFormChange}
+              required
+              fullWidth
+              //sx={{ width: { xs: '100%', sm: 'calc(50% - 8px)' } }} // 50% 宽度，减去一半的间距
+            />
+            <TextField
+              label="图片URL"
+              name="image_url"
+              value={gameForm.image_url}
+              onChange={handleGameFormChange}
+              fullWidth
+              //sx={{ width: { xs: '100%', sm: 'calc(50% - 8px)' } }}
+            />
+            <TextField
+              label="发行年份"
+              name="release_year"
+              type="number"
+              value={gameForm.release_year}
+              onChange={handleGameFormChange}
+              sx={{ width: { xs: '100%', sm: 'calc(50% - 8px)' } }}
+            />
+            <TextField
+              label="开发者"
+              name="developer"
+              value={gameForm.developer}
+              onChange={handleGameFormChange}
+              sx={{ width: { xs: '100%', sm: 'calc(50% - 8px)' } }}
+            />
+            <TextField
+              label="发行商"
+              name="publisher"
+              value={gameForm.publisher}
+              onChange={handleGameFormChange}
+              sx={{ width: { xs: '100%', sm: 'calc(50% - 8px)' } }}
+            />
+            <TextField
+              label="平台"
+              name="platform"
+              value={gameForm.platform}
+              onChange={handleGameFormChange}
+              sx={{ width: { xs: '100%', sm: 'calc(50% - 8px)' } }}
+            />
+            <TextField
+              label="游玩时长 (小时)"
+              name="play_time_hours"
+              type="number"
+              value={gameForm.play_time_hours}
+              onChange={handleGameFormChange}
+              sx={{ width: { xs: '100%', sm: 'calc(50% - 8px)' } }}
+            />
+            <FormControlLabel
+              control={
+                <Switch // 将 Checkbox 替换为 Switch
+                  checked={gameForm.is_completed}
+                  onChange={handleGameFormChange}
+                  name="is_completed"
+                  color="primary" // 可以添加颜色，例如 primary 或 secondary
+                />
+              }
+              label="已通关"
+              sx={{ width: { xs: '100%', sm: 'calc(50% - 8px)' }, mt: 1 }} // 保持原有布局样式
+            />
+          </Box>
 
 
           <Typography variant="h6" sx={{ mt: 3, mb: 2 }}>评分 (0.0 - 10.0)*</Typography>
-          <Grid container spacing={1}>
+          {/* 6个评分排成一排 */}
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', gap: 2, mb: 2 }}>
             {[
               { label: '美术', name: 'art_rating' },
               { label: '音乐', name: 'music_rating' },
@@ -438,23 +435,30 @@ const AdminPage = () => {
               { label: '创新性', name: 'innovation_rating' },
               { label: '性能', name: 'performance_rating' },
             ].map((ratingField) => (
-              <Grid item xs={100} sm={100} md={100} key={ratingField.name}>
-                <TextField
-                  label={ratingField.label}
-                  name={ratingField.name}
-                  type="number"
-                  step="0.1"
-                  value={gameForm[ratingField.name]}
-                  onChange={handleGameFormChange}
-                  required
-                  fullWidth
-                  inputProps={{ min: 0, max: 10 }}
-                />
-              </Grid>
+              <TextField
+                key={ratingField.name}
+                label={ratingField.label}
+                name={ratingField.name}
+                type="number"
+                step="0.1"
+                value={gameForm[ratingField.name]}
+                onChange={handleGameFormChange}
+                required
+                inputProps={{ min: 0, max: 10 }}
+                // 响应式宽度：xs=100%, sm=50%, md=33.33%, lg=16.66% (6个一排)
+                sx={{
+                  width: {
+                    xs: '100%',
+                    sm: 'calc(50% - 8px)', // 2 per row
+                    md: 'calc(33.33% - 10.67px)', // 3 per row
+                    lg: 'calc(16.66% - 13.33px)', // 6 per row
+                  },
+                }}
+              />
             ))}
-          </Grid>
+          </Box>
 
-          <TextField
+          {/* <TextField
             label="我的综合评分 (0.0 - 10.0)"
             name="my_overall_score"
             type="number"
@@ -463,15 +467,14 @@ const AdminPage = () => {
             onChange={handleGameFormChange}
             fullWidth
             sx={{ mt: 2, mb: 2 }}
-            inputProps={{ min: 0, max: 10 }}
-          />
+          /> */}
           <TextField
             label="评价"
             name="review_text"
             value={gameForm.review_text}
             onChange={handleGameFormChange}
             multiline
-            rows={4}
+            rows={8}
             fullWidth
             sx={{ mb: 2 }}
           />
@@ -510,7 +513,7 @@ const AdminPage = () => {
 
       <Divider sx={{ my: 4 }} />
 
-      {/* 管理游戏列表 */}
+      {/* 管理游戏列表 - 此部分布局保持不变，因为它已经未使用 Grid */}
       <Paper elevation={3} sx={{ p: { xs: 2, md: 4 }, mb: 4, borderRadius: 2 }}>
         <Typography variant="h5" component="h2" gutterBottom>
           管理游戏列表
@@ -675,7 +678,7 @@ const AdminPage = () => {
 
       <Divider sx={{ my: 4 }} />
 
-      {/* 管理标签 */}
+      {/* 管理标签 - 此部分布局保持不变，因为它已经未使用 Grid */}
       <Paper elevation={3} sx={{ p: { xs: 2, md: 4 }, mb: 4, borderRadius: 2 }}>
         <Typography variant="h5" component="h2" gutterBottom>
           管理标签
