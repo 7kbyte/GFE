@@ -7,9 +7,51 @@ import {
   deleteGame,
   fetchAllTags,
   deleteTag,
-  addGameTags,
-  deleteGameTag
+  // addGameTags, // 这些通常通过游戏创建/更新来处理
+  // deleteGameTag
 } from '../api'; // 确保路径正确
+
+// 导入 Material-UI 组件
+import {
+  Container,
+  Box,
+  Typography,
+  TextField,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Button,
+  Grid,
+  Paper,
+  Divider,
+  Stack,
+  CircularProgress,
+  Alert,
+  Snackbar, // 用于替代 alert()
+  TableContainer,
+  Table,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableCell,
+  Pagination,
+  Checkbox,
+  FormControlLabel,
+  Chip,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemSecondaryAction,
+  IconButton,
+} from '@mui/material';
+
+// 导入 Material-UI 图标
+import AddIcon from '@mui/icons-material/Add';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import SearchIcon from '@mui/icons-material/Search';
+import CloseIcon from '@mui/icons-material/Close';
 
 // 辅助函数：将评分转换为浮点数，并确保在有效范围内
 const parseRating = (value) => {
@@ -46,6 +88,10 @@ const AdminPage = () => {
   const [tags, setTags] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = useState('success'); // success, error, info, warning
+
   const [gameForm, setGameForm] = useState(initialGameFormState);
   const [editingGameId, setEditingGameId] = useState(null); // 当前正在编辑的游戏ID
   const [newTagName, setNewTagName] = useState('');
@@ -58,6 +104,19 @@ const AdminPage = () => {
   const [perPage, setPerPage] = useState(5); // 管理页可以少一点
   const [totalPages, setTotalPages] = useState(1);
   const [totalGames, setTotalGames] = useState(0);
+
+  const showSnackbar = (message, severity = 'success') => {
+    setSnackbarMessage(message);
+    setSnackbarSeverity(severity);
+    setSnackbarOpen(true);
+  };
+
+  const handleSnackbarClose = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setSnackbarOpen(false);
+  };
 
   const loadGames = useCallback(async () => {
     try {
@@ -75,7 +134,8 @@ const AdminPage = () => {
       setTotalPages(data.total_pages);
       setTotalGames(data.total_games);
     } catch (err) {
-      setError(err.message);
+      setError("加载游戏失败: " + err.message);
+      showSnackbar("加载游戏失败: " + err.message, 'error');
     } finally {
       setLoading(false);
     }
@@ -88,6 +148,7 @@ const AdminPage = () => {
     } catch (err) {
       console.error("Failed to fetch tags:", err.message);
       setError("获取标签失败: " + err.message);
+      showSnackbar("获取标签失败: " + err.message, 'error');
     }
   }, []);
 
@@ -124,14 +185,15 @@ const AdminPage = () => {
     const validationError = validateGameForm();
     if (validationError) {
       setError(validationError);
+      showSnackbar(validationError, 'warning');
       return;
     }
     setError(null); // 清除之前的错误
 
     const gameDataToSend = {
       ...gameForm,
-      release_year: gameForm.release_year ? parseInt(gameForm.release_year) : null,
-      play_time_hours: gameForm.play_time_hours ? parseInt(gameForm.play_time_hours) : null,
+      release_year: gameForm.release_year ? parseInt(gameForm.release_year, 10) : null,
+      play_time_hours: gameForm.play_time_hours ? parseInt(gameForm.play_time_hours, 10) : null,
       art_rating: parseRating(gameForm.art_rating),
       music_rating: parseRating(gameForm.music_rating),
       story_rating: parseRating(gameForm.story_rating),
@@ -145,17 +207,18 @@ const AdminPage = () => {
     try {
       if (editingGameId) {
         await updateGame(editingGameId, gameDataToSend);
-        alert('游戏更新成功！');
+        showSnackbar('游戏更新成功！', 'success');
       } else {
         await createGame(gameDataToSend);
-        alert('游戏添加成功！');
+        showSnackbar('游戏添加成功！', 'success');
       }
       setGameForm(initialGameFormState);
       setEditingGameId(null);
       loadGames(); // 重新加载游戏列表
       loadTags(); // 重新加载标签列表 (因为可能添加了新标签)
     } catch (err) {
-      setError(err.message);
+      setError("操作失败: " + err.message);
+      showSnackbar("操作失败: " + err.message, 'error');
     }
   };
 
@@ -180,16 +243,18 @@ const AdminPage = () => {
       play_time_hours: game.play_time_hours || '',
       tags: game.tags ? game.tags.join(', ') : '', // 将标签数组转为字符串
     });
+    window.scrollTo({ top: 0, behavior: 'smooth' }); // 滚动到表单顶部
   };
 
   const handleDeleteGame = async (gameId) => {
-    if (window.confirm('确定要删除这个游戏吗？')) {
+    if (window.confirm('确定要删除这个游戏吗？')) { // 可以替换为 MUI Dialog
       try {
         await deleteGame(gameId);
-        alert('游戏删除成功！');
+        showSnackbar('游戏删除成功！', 'success');
         loadGames();
       } catch (err) {
-        setError(err.message);
+        setError("删除失败: " + err.message);
+        showSnackbar("删除失败: " + err.message, 'error');
       }
     }
   };
@@ -198,33 +263,25 @@ const AdminPage = () => {
   const handleAddTag = async (e) => {
     e.preventDefault();
     if (!newTagName.trim()) {
-      setError("标签名称不能为空。");
+      showSnackbar("标签名称不能为空。", 'warning');
       return;
     }
-    setError(null);
-    try {
-      // 实际上，添加标签是通过 createGame 或 updateGame 时的 tags 字段自动处理的。
-      // 这里是提供一个单独添加"全局"标签的接口，但后端目前没有直接的 POST /tags 接口。
-      // 如果要实现独立添加标签功能，需要后端提供一个 POST /tags 接口。
-      // 目前，标签是在游戏创建/更新时自动创建的。
-      // 为了演示，我们可以模拟一个添加标签到某个游戏的操作，或者直接提示用户标签会在游戏添加时自动创建。
-      alert("标签会在添加或修改游戏时自动创建。此处仅用于展示现有标签。");
-      setNewTagName('');
-      loadTags();
-    } catch (err) {
-      setError(err.message);
-    }
+    // 提示用户标签会在游戏添加/修改时自动创建
+    showSnackbar("标签会在添加或修改游戏时自动创建。此处仅用于展示现有标签。", 'info');
+    setNewTagName('');
+    loadTags(); // 重新加载标签列表
   };
 
   const handleDeleteTag = async (tagId) => {
-    if (window.confirm('确定要删除这个标签吗？这会从所有关联游戏中移除它。')) {
+    if (window.confirm('确定要删除这个标签吗？这会从所有关联游戏中移除它。')) { // 可以替换为 MUI Dialog
       try {
         await deleteTag(tagId);
-        alert('标签删除成功！');
+        showSnackbar('标签删除成功！', 'success');
         loadTags(); // 重新加载标签列表
         loadGames(); // 重新加载游戏列表，以反映标签变化
       } catch (err) {
-        setError(err.message);
+        setError("删除标签失败: " + err.message);
+        showSnackbar("删除标签失败: " + err.message, 'error');
       }
     }
   };
@@ -243,10 +300,10 @@ const AdminPage = () => {
     setCurrentPage(1);
   };
   const handlePerPageChange = (e) => {
-    setPerPage(parseInt(e.target.value));
+    setPerPage(parseInt(e.target.value, 10)); // 确保是数字
     setCurrentPage(1);
   };
-  const handlePageChange = (page) => {
+  const handlePageChange = (event, page) => { // Pagination组件的onChange会传入event和page
     setCurrentPage(page);
   };
 
@@ -263,214 +320,414 @@ const AdminPage = () => {
     { value: 'my_overall_score', label: '综合评分' },
   ];
 
-
-  if (loading) return <div className="app-container">加载中...</div>;
-  if (error) return <div className="app-container error">错误: {error}</div>;
+  if (loading) {
+    return (
+      <Container maxWidth="md" sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
+        <CircularProgress size={60} />
+        <Typography variant="h6" sx={{ ml: 2 }}>加载中...</Typography>
+      </Container>
+    );
+  }
 
   return (
-    <div className="app-container admin-page">
-      <h1>管理员面板</h1>
+    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+      <Typography variant="h4" component="h1" gutterBottom sx={{ textAlign: 'center' }}>
+        管理员面板
+      </Typography>
 
-      {error && <div className="error-message">{error}</div>}
+      {error && (
+        <Alert severity="error" sx={{ mb: 3 }}>
+          {error}
+        </Alert>
+      )}
 
-      <section className="admin-section">
-        <h2>{editingGameId ? '编辑游戏' : '添加新游戏'}</h2>
-        <form onSubmit={handleSubmitGame} className="game-form">
-          <div className="form-group">
-            <label>名称*:</label>
-            <input type="text" name="name" value={gameForm.name} onChange={handleGameFormChange} required />
-          </div>
-          <div className="form-group">
-            <label>图片URL:</label>
-            <input type="text" name="image_url" value={gameForm.image_url} onChange={handleGameFormChange} />
-          </div>
-          <div className="form-group">
-            <label>发行年份:</label>
-            <input type="number" name="release_year" value={gameForm.release_year} onChange={handleGameFormChange} />
-          </div>
-          <div className="form-group">
-            <label>开发者:</label>
-            <input type="text" name="developer" value={gameForm.developer} onChange={handleGameFormChange} />
-          </div>
-          <div className="form-group">
-            <label>发行商:</label>
-            <input type="text" name="publisher" value={gameForm.publisher} onChange={handleGameFormChange} />
-          </div>
-          <div className="form-group">
-            <label>平台:</label>
-            <input type="text" name="platform" value={gameForm.platform} onChange={handleGameFormChange} />
-          </div>
+      {/* 添加/编辑游戏 */}
+      <Paper elevation={3} sx={{ p: { xs: 2, md: 4 }, mb: 4, borderRadius: 2 }}>
+        <Typography variant="h5" component="h2" gutterBottom>
+          {editingGameId ? '编辑游戏' : '添加新游戏'}
+        </Typography>
+        <Box component="form" onSubmit={handleSubmitGame} sx={{ '& .MuiTextField-root': { mb: 2, mr: 2, width: { xs: '100%', sm: '48%' } } }}>
+          <TextField
+            label="名称"
+            name="name"
+            value={gameForm.name}
+            onChange={handleGameFormChange}
+            required
+            fullWidth // 占据一行
+            sx={{ mb: 2 }}
+          />
+          <TextField
+            label="图片URL"
+            name="image_url"
+            value={gameForm.image_url}
+            onChange={handleGameFormChange}
+            fullWidth
+            sx={{ mb: 2 }}
+          />
+          <Grid container spacing={1}>
+            <Grid item xs={12} sm={12} md={12} sx={{ display: 'flex', alignItems: 'center' }}>
+              <TextField
+                label="发行年份"
+                name="release_year"
+                type="number"
+                value={gameForm.release_year}
+                onChange={handleGameFormChange}
+                fullWidth
+              />
+            </Grid>
+            <Grid item xs={12} sm={12} md={12} sx={{ display: 'flex', alignItems: 'center' }}>
+              <TextField
+                label="开发者"
+                name="developer"
+                value={gameForm.developer}
+                onChange={handleGameFormChange}
+                fullWidth
+              />
+            </Grid>
+            <Grid item xs={12} sm={12} md={12} sx={{ display: 'flex', alignItems: 'center' }}>
+              <TextField
+                label="发行商"
+                name="publisher"
+                value={gameForm.publisher}
+                onChange={handleGameFormChange}
+                fullWidth
+              />
+            </Grid>
+            <Grid item xs={12} sm={12} md={12} sx={{ display: 'flex', alignItems: 'center' }}>
+              <TextField
+                label="平台"
+                name="platform"
+                value={gameForm.platform}
+                onChange={handleGameFormChange}
+                fullWidth
+              />
+            </Grid>
+            <Grid item xs={12} sm={12} md={12} sx={{ display: 'flex', alignItems: 'center' }}>
+              <TextField
+                label="游玩时长 (小时)"
+                name="play_time_hours"
+                type="number"
+                value={gameForm.play_time_hours}
+                onChange={handleGameFormChange}
+                fullWidth
+              />
+            </Grid>
+            <Grid item xs={12} sm={12} md={12} sx={{ display: 'flex', alignItems: 'center' }}>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={gameForm.is_completed}
+                    onChange={handleGameFormChange}
+                    name="is_completed"
+                  />
+                }
+                label="已通关"
+                sx={{ mt: 1 }}
+              />
+            </Grid>
+          </Grid>
 
-          <h3>评分 (0.0 - 10.0)*</h3>
-          <div className="ratings-input-grid">
-            <div className="form-group">
-              <label>美术:</label>
-              <input type="number" step="0.1" name="art_rating" value={gameForm.art_rating} onChange={handleGameFormChange} required />
-            </div>
-            <div className="form-group">
-              <label>音乐:</label>
-              <input type="number" step="0.1" name="music_rating" value={gameForm.music_rating} onChange={handleGameFormChange} required />
-            </div>
-            <div className="form-group">
-              <label>故事:</label>
-              <input type="number" step="0.1" name="story_rating" value={gameForm.story_rating} onChange={handleGameFormChange} required />
-            </div>
-            <div className="form-group">
-              <label>可玩性:</label>
-              <input type="number" step="0.1" name="playability_rating" value={gameForm.playability_rating} onChange={handleGameFormChange} required />
-            </div>
-            <div className="form-group">
-              <label>创新性:</label>
-              <input type="number" step="0.1" name="innovation_rating" value={gameForm.innovation_rating} onChange={handleGameFormChange} required />
-            </div>
-            <div className="form-group">
-              <label>性能:</label>
-              <input type="number" step="0.1" name="performance_rating" value={gameForm.performance_rating} onChange={handleGameFormChange} required />
-            </div>
-          </div>
 
-          <div className="form-group">
-            <label>我的综合评分 (0.0 - 10.0):</label>
-            <input type="number" step="0.1" name="my_overall_score" value={gameForm.my_overall_score} onChange={handleGameFormChange} />
-          </div>
-          <div className="form-group">
-            <label>评价:</label>
-            <textarea name="review_text" value={gameForm.review_text} onChange={handleGameFormChange}></textarea>
-          </div>
-          <div className="form-group checkbox-group">
-            <label>已通关:</label>
-            <input type="checkbox" name="is_completed" checked={gameForm.is_completed} onChange={handleGameFormChange} />
-          </div>
-          <div className="form-group">
-            <label>游玩时长 (小时):</label>
-            <input type="number" name="play_time_hours" value={gameForm.play_time_hours} onChange={handleGameFormChange} />
-          </div>
-          <div className="form-group">
-            <label>标签 (逗号分隔):</label>
-            <input type="text" name="tags" value={gameForm.tags} onChange={handleGameFormChange} placeholder="例如: RPG, 动作, 独立游戏" />
-          </div>
+          <Typography variant="h6" sx={{ mt: 3, mb: 2 }}>评分 (0.0 - 10.0)*</Typography>
+          <Grid container spacing={1}>
+            {[
+              { label: '美术', name: 'art_rating' },
+              { label: '音乐', name: 'music_rating' },
+              { label: '故事', name: 'story_rating' },
+              { label: '可玩性', name: 'playability_rating' },
+              { label: '创新性', name: 'innovation_rating' },
+              { label: '性能', name: 'performance_rating' },
+            ].map((ratingField) => (
+              <Grid item xs={100} sm={100} md={100} key={ratingField.name}>
+                <TextField
+                  label={ratingField.label}
+                  name={ratingField.name}
+                  type="number"
+                  step="0.1"
+                  value={gameForm[ratingField.name]}
+                  onChange={handleGameFormChange}
+                  required
+                  fullWidth
+                  inputProps={{ min: 0, max: 10 }}
+                />
+              </Grid>
+            ))}
+          </Grid>
 
-          <button type="submit">{editingGameId ? '更新游戏' : '添加游戏'}</button>
-          {editingGameId && (
-            <button type="button" onClick={() => { setEditingGameId(null); setGameForm(initialGameFormState); }}>取消编辑</button>
-          )}
-        </form>
-      </section>
-
-      <section className="admin-section">
-        <h2>管理游戏列表</h2>
-        <div className="filters-container">
-          <input
-            type="text"
-            placeholder="搜索游戏..."
-            value={searchQuery}
-            onChange={handleSearchChange}
-            className="search-input"
+          <TextField
+            label="我的综合评分 (0.0 - 10.0)"
+            name="my_overall_score"
+            type="number"
+            step="0.1"
+            value={gameForm.my_overall_score}
+            onChange={handleGameFormChange}
+            fullWidth
+            sx={{ mt: 2, mb: 2 }}
+            inputProps={{ min: 0, max: 10 }}
+          />
+          <TextField
+            label="评价"
+            name="review_text"
+            value={gameForm.review_text}
+            onChange={handleGameFormChange}
+            multiline
+            rows={4}
+            fullWidth
+            sx={{ mb: 2 }}
+          />
+          <TextField
+            label="标签 (逗号分隔)"
+            name="tags"
+            value={gameForm.tags}
+            onChange={handleGameFormChange}
+            placeholder="例如: RPG, 动作, 独立游戏"
+            fullWidth
+            sx={{ mb: 3 }}
           />
 
-          <div className="sort-controls">
-            <label htmlFor="adminSortBy">排序依据:</label>
-            <select id="adminSortBy" value={sortBy} onChange={handleSortChange}>
-              {allowedSortFields.map(field => (
-                <option key={field.value} value={field.value}>{field.label}</option>
-              ))}
-            </select>
+          <Stack direction="row" spacing={2} sx={{ mt: 2 }}>
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              startIcon={editingGameId ? <EditIcon /> : <AddIcon />}
+            >
+              {editingGameId ? '更新游戏' : '添加游戏'}
+            </Button>
+            {editingGameId && (
+              <Button
+                type="button"
+                variant="outlined"
+                color="secondary"
+                onClick={() => { setEditingGameId(null); setGameForm(initialGameFormState); }}
+              >
+                取消编辑
+              </Button>
+            )}
+          </Stack>
+        </Box>
+      </Paper>
 
-            <label htmlFor="adminSortOrder">顺序:</label>
-            <select id="adminSortOrder" value={sortOrder} onChange={handleOrderChange}>
-              <option value="desc">降序</option>
-              <option value="asc">升序</option>
-            </select>
+      <Divider sx={{ my: 4 }} />
 
-            <label htmlFor="adminPerPage">每页显示:</label>
-            <select id="adminPerPage" value={perPage} onChange={handlePerPageChange}>
-              <option value="5">5</option>
-              <option value="10">10</option>
-              <option value="20">20</option>
-            </select>
-          </div>
-        </div>
+      {/* 管理游戏列表 */}
+      <Paper elevation={3} sx={{ p: { xs: 2, md: 4 }, mb: 4, borderRadius: 2 }}>
+        <Typography variant="h5" component="h2" gutterBottom>
+          管理游戏列表
+        </Typography>
+        {/* 搜索和筛选控件 */}
+        <Stack
+          direction={{ xs: 'column', sm: 'row' }}
+          spacing={2}
+          alignItems={{ xs: 'stretch', sm: 'flex-end' }}
+          justifyContent="space-between"
+          sx={{ mb: 4 }}
+        >
+          <TextField
+            label="搜索游戏..."
+            variant="outlined"
+            value={searchQuery}
+            onChange={handleSearchChange}
+            InputProps={{
+              startAdornment: (
+                <SearchIcon color="action" sx={{ mr: 1 }} />
+              ),
+            }}
+            sx={{ width: { xs: '100%', sm: 'auto' } }}
+          />
+
+          <Stack direction="row" spacing={2} alignItems="center">
+            <FormControl sx={{ minWidth: 150 }}>
+              <InputLabel id="adminSortBy-label">排序依据</InputLabel>
+              <Select
+                labelId="adminSortBy-label"
+                id="adminSortBy"
+                value={sortBy}
+                label="排序依据"
+                onChange={handleSortChange}
+              >
+                {allowedSortFields.map((field) => (
+                  <MenuItem key={field.value} value={field.value}>
+                    {field.label}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            <FormControl sx={{ minWidth: 100 }}>
+              <InputLabel id="adminSortOrder-label">顺序</InputLabel>
+              <Select
+                labelId="adminSortOrder-label"
+                id="adminSortOrder"
+                value={sortOrder}
+                label="顺序"
+                onChange={handleOrderChange}
+              >
+                <MenuItem value="desc">降序</MenuItem>
+                <MenuItem value="asc">升序</MenuItem>
+              </Select>
+            </FormControl>
+
+            <FormControl sx={{ minWidth: 80 }}>
+              <InputLabel id="adminPerPage-label">每页</InputLabel>
+              <Select
+                labelId="adminPerPage-label"
+                id="adminPerPage"
+                value={perPage}
+                label="每页"
+                onChange={handlePerPageChange}
+              >
+                <MenuItem value={5}>5</MenuItem>
+                <MenuItem value={10}>10</MenuItem>
+                <MenuItem value={20}>20</MenuItem>
+              </Select>
+            </FormControl>
+          </Stack>
+        </Stack>
 
         {games.length === 0 ? (
-          <p>没有找到游戏。</p>
+          <Typography variant="body1" sx={{ textAlign: 'center', mt: 4 }}>
+            没有找到游戏。
+          </Typography>
         ) : (
-          <table className="game-admin-table">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>名称</th>
-                <th>发行年份</th>
-                <th>综合评分</th>
-                <th>标签</th>
-                <th>操作</th>
-              </tr>
-            </thead>
-            <tbody>
-              {games.map((game) => (
-                <tr key={game.id}>
-                  <td>{game.id}</td>
-                  <td>{game.name}</td>
-                  <td>{game.release_year || 'N/A'}</td>
-                  <td>{game.my_overall_score !== null ? game.my_overall_score.toFixed(1) : 'N/A'}</td>
-                  <td>{game.tags && game.tags.length > 0 ? game.tags.join(', ') : '无'}</td>
-                  <td className="actions">
-                    <button onClick={() => handleEditGame(game)}>编辑</button>
-                    <button onClick={() => handleDeleteGame(game.id)} className="delete-button">删除</button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <TableContainer component={Paper} sx={{ boxShadow: 'none', border: '1px solid', borderColor: 'divider' }}>
+            <Table sx={{ minWidth: 650 }} aria-label="游戏管理表格">
+              <TableHead>
+                <TableRow>
+                  <TableCell sx={{ fontWeight: 'bold' }}>ID</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold' }}>名称</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold' }}>发行年份</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold' }}>综合评分</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold' }}>标签</TableCell>
+                  <TableCell align="right" sx={{ fontWeight: 'bold' }}>操作</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {games.map((game) => (
+                  <TableRow
+                    key={game.id}
+                    sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                  >
+                    <TableCell component="th" scope="row">
+                      {game.id}
+                    </TableCell>
+                    <TableCell>{game.name}</TableCell>
+                    <TableCell>{game.release_year || 'N/A'}</TableCell>
+                    <TableCell>{game.my_overall_score !== null ? game.my_overall_score.toFixed(1) : 'N/A'}</TableCell>
+                    <TableCell>
+                      <Stack direction="row" spacing={0.5} useFlexGap flexWrap="wrap">
+                        {game.tags && game.tags.length > 0 ? (
+                          game.tags.map((tag, idx) => (
+                            <Chip key={idx} label={tag} size="small" variant="outlined" color="primary" />
+                          ))
+                        ) : (
+                          <Typography variant="body2" color="text.secondary">无</Typography>
+                        )}
+                      </Stack>
+                    </TableCell>
+                    <TableCell align="right">
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        startIcon={<EditIcon />}
+                        onClick={() => handleEditGame(game)}
+                        sx={{ mr: 1 }}
+                      >
+                        编辑
+                      </Button>
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        color="error"
+                        startIcon={<DeleteIcon />}
+                        onClick={() => handleDeleteGame(game.id)}
+                      >
+                        删除
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
         )}
 
         {/* 分页控制 */}
         {totalPages > 1 && (
-          <div className="pagination-controls">
-            <button
-              onClick={() => handlePageChange(currentPage - 1)}
-              disabled={currentPage === 1}
-            >
-              上一页
-            </button>
-            <span>
-              页码 {currentPage} / {totalPages} (共 {totalGames} 条)
-            </span>
-            <button
-              onClick={() => handlePageChange(currentPage + 1)}
-              disabled={currentPage === totalPages}
-            >
-              下一页
-            </button>
-          </div>
+          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4, mb: 2 }}>
+            <Pagination
+              count={totalPages}
+              page={currentPage}
+              onChange={handlePageChange}
+              color="primary"
+              showFirstButton
+              showLastButton
+              size="large"
+            />
+          </Box>
         )}
-      </section>
+        {totalPages > 1 && (
+          <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center' }}>
+            共 {totalGames} 条游戏
+          </Typography>
+        )}
+      </Paper>
 
-      <section className="admin-section">
-        <h2>管理标签</h2>
-        <form onSubmit={handleAddTag} className="tag-form">
-          <input
-            type="text"
-            placeholder="新标签名称"
+      <Divider sx={{ my: 4 }} />
+
+      {/* 管理标签 */}
+      <Paper elevation={3} sx={{ p: { xs: 2, md: 4 }, mb: 4, borderRadius: 2 }}>
+        <Typography variant="h5" component="h2" gutterBottom>
+          管理标签
+        </Typography>
+        <Box component="form" onSubmit={handleAddTag} sx={{ display: 'flex', gap: 2, mb: 3 }}>
+          <TextField
+            label="新标签名称"
+            variant="outlined"
             value={newTagName}
             onChange={(e) => setNewTagName(e.target.value)}
+            fullWidth
           />
-          <button type="submit">添加标签 (请通过游戏添加)</button>
-        </form>
+          <Button type="submit" variant="contained" startIcon={<AddIcon />}>
+            添加标签 (通过游戏添加)
+          </Button>
+        </Box>
 
         {tags.length === 0 ? (
-          <p>没有可用的标签。</p>
+          <Typography variant="body1" sx={{ textAlign: 'center', mt: 2 }}>
+            没有可用的标签。
+          </Typography>
         ) : (
-          <ul className="tag-list">
+          <List sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
             {tags.map((tag) => (
-              <li key={tag.id}>
-                {tag.name}
-                <button onClick={() => handleDeleteTag(tag.id)} className="delete-button">删除</button>
-              </li>
+              <ListItem
+                key={tag.id}
+                divider // 添加分割线
+              >
+                <ListItemText primary={tag.name} />
+                <ListItemSecondaryAction>
+                  <IconButton edge="end" aria-label="delete" onClick={() => handleDeleteTag(tag.id)} color="error">
+                    <DeleteIcon />
+                  </IconButton>
+                </ListItemSecondaryAction>
+              </ListItem>
             ))}
-          </ul>
+          </List>
         )}
-      </section>
-    </div>
+      </Paper>
+
+      {/* Snackbar for feedback */}
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={6000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert onClose={handleSnackbarClose} severity={snackbarSeverity} sx={{ width: '100%' }}>
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
+    </Container>
   );
 };
 

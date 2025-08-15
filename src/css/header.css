@@ -2,7 +2,7 @@
 
 /* Header Styles */
 .main-header {
-  background-color: var(--secondary-bg); /* 使用白色背景 */
+  background-color: #fbe8a6; /* 使用白色背景 */
   padding: 15px 0; /* 上下内边距，左右无 */
   box-shadow: 0 4px 15px var(--shadow-light); /* 柔和的底部阴影 */
   position: sticky; /* 粘性定位，当页面滚动时，页首会固定在顶部 */

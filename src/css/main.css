@@ -3,11 +3,13 @@
 @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700&display=swap');
 
 /* 全局基础样式 */
+
 body {
     font-family: 'Nunito', 'Helvetica Neue', Arial, sans-serif; /* 使用 Nunito 字体，提供圆润感 */
     line-height: 1.6;
-    color: #333; /* 主体文字颜色 */
-    background-color: #f8fbfd; /* 非常浅的蓝色背景，营造清新感 */
+    color: #303c6c; /* 主体文字颜色 */
+    background-color: #f4976c; /* 非常浅的蓝色背景，营造清新感 */
+    /*background-image: linear-gradient(-225deg, #231557 0%, #44107A 29%, #FF1361 67%, #FFF800 100%); */
     margin: 0;
     padding: 0;
     -webkit-font-smoothing: antialiased; /* 字体抗锯齿，使文字更平滑 */
@@ -19,7 +21,7 @@ body {
     max-width: 1200px; /* 最大宽度，保持内容居中 */
     margin: 40px auto; /* 上下外边距，左右自动居中 */
     padding: 25px;
-    background-color: #ffffff; /* 白色背景 */
+    background-color: #d2fdff; /* 白色背景 */
     border-radius: 12px; /* 圆角边框 */
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08); /* 柔和的阴影，增加层次感 */
     box-sizing: border-box; /* 盒模型为边框盒 */
@@ -27,7 +29,7 @@ body {
 
 h1 {
     text-align: center;
-    color: #2c3e50; /* 标题颜色，深蓝色调 */
+    color: #303c6c; /* 标题颜色，深蓝色调 */
     margin-bottom: 35px;
     font-size: 2.8em; /* 标题字号 */
     font-weight: 700; /* 粗体 */
