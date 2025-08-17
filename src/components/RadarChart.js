@@ -5,7 +5,7 @@ import { Radar } from 'react-chartjs-2';
 import { scoreToGrade } from '../utils/scoreUtils';
 
 // 导入 Material-UI 组件和 hooks
-import { Card, CardContent, Box, Typography } from '@mui/material';
+import { Box, Typography } from '@mui/material'; // 移除 Card, CardContent
 import { useTheme, alpha } from '@mui/material/styles'; // 导入 useTheme 和 alpha 辅助函数
 
 // 注册 Chart.js 所需的组件
@@ -18,15 +18,14 @@ ChartJS.register(
   Legend
 );
 
+// 移除外部的 Card 包装，使其更灵活地嵌入
 const RadarChart = ({ scores }) => {
   const theme = useTheme(); // 使用 useTheme 钩子访问 Material-UI 主题
 
-  const labels = ['美术 Art', '音乐 Music', '剧情 Story', '可玩性 Playability', '创新性 Innovation', '运行效率 Performance'];
+  const labels = ['美术', '音乐', '剧情', '玩法', '创新', '性能'];
 
   // 根据主题颜色定义图表颜色
-  // 可以选择 theme.palette.primary.main 或 theme.palette.secondary.main
   const chartColor = theme.palette.primary.main;
-  // 使用 alpha 辅助函数创建带有透明度的颜色，用于填充
   const chartBackgroundColor = alpha(chartColor, 0.2);
 
   const data = {
@@ -61,16 +60,17 @@ const RadarChart = ({ scores }) => {
         suggestedMin: 0, // 最小值设为0
         suggestedMax: 10, // 最大值设为10
         ticks: {
-          stepSize: 1, // 步长为1
+          stepSize: 2, // 步长为2，减少刻度线密度，更适合小图表
           color: theme.palette.text.secondary, // 刻度标签颜色使用次要文本色
           // 自定义刻度标签，显示对应的等级
           callback: function(value, index, values) {
-            return scoreToGrade(value);
+            // 只显示非零刻度，或根据需要显示等级
+            return value === 0 ? '0' : scoreToGrade(value);
           }
         },
         pointLabels: {
           font: {
-            size: 14, // 轴标签字体大小
+            size: 15, // 轴标签字体大小，更小以适应空间
             color: theme.palette.text.primary, // 轴标签颜色使用主要文本色
           },
           color: theme.palette.text.primary, // 兼容性设置，确保颜色被应用
@@ -86,7 +86,7 @@ const RadarChart = ({ scores }) => {
           // 自定义工具提示内容
           label: function(context) {
             const score = context.raw;
-            return `${context.label}: ${score} (${scoreToGrade(score)})`;
+            return `${context.label}: ${score !== null ? score.toFixed(1) : 'N/A'} (${scoreToGrade(score)})`;
           }
         },
         // 自定义工具提示的样式，使其与 Material-UI 主题更协调
@@ -101,19 +101,11 @@ const RadarChart = ({ scores }) => {
   };
 
   return (
-    // 使用 Material-UI Card 组件包裹雷达图，提供统一的视觉风格
-    <Card sx={{ maxWidth: 600, mx: 'auto', my: 4 }}> {/* maxWidth 限制卡片最大宽度，mx: 'auto' 水平居中，my 垂直外边距 */}
-      <CardContent>
-        {/* 使用 Typography 组件作为图表标题 */}
-        <Typography variant="h6" component="h3" gutterBottom sx={{ textAlign: 'center' }}>
-          游戏维度评分雷达图
-        </Typography>
-        {/* Box 用于控制图表的尺寸，确保响应式和填充容器 */}
-        <Box sx={{ height: 400, width: '100%' }}> {/* 固定高度，宽度填充父容器 */}
-          <Radar data={data} options={options} />
-        </Box>
-      </CardContent>
-    </Card>
+    // 使用 Box 控制图表的尺寸，确保响应式和填充容器
+    // minHeight 和 minWidth 确保图表在小尺寸下依然可见
+    <Box sx={{ height: '100%', width: '100%', minHeight: 150, minWidth: 150, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <Radar data={data} options={options} />
+    </Box>
   );
 };
 

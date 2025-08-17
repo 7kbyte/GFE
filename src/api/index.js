@@ -1,4 +1,4 @@
-// src/services/api.js
+// src/api/index.js
 
 // 注意：根据你 Flask 后端蓝图的 url_prefix 设置，API_BASE_URL 应该指向 Flask 应用的根地址。
 // 如果你的 Flask 蓝图是 `url_prefix='/games'` 和 `url_prefix='/tags'`，那么这里就是 `http://127.0.0.1:5000`。

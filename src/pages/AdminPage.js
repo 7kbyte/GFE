@@ -12,7 +12,7 @@ import {
 // 导入 Material-UI 组件
 import {
   Container,
-  Box, // 替代 Grid 的主要布局组件
+  Box,
   Typography,
   TextField,
   FormControl,
@@ -22,7 +22,7 @@ import {
   Button,
   Paper,
   Divider,
-  Stack, // 用于水平或垂直堆叠，替代 Grid 的部分功能
+  Stack,
   CircularProgress,
   Alert,
   Snackbar,
@@ -49,7 +49,6 @@ import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
-// import CloseIcon from '@mui/icons-material/Close'; // CloseIcon 未使用，已移除导入
 
 // 辅助函数：将评分转换为浮点数，并确保在有效范围内
 const parseRating = (value) => {
@@ -84,7 +83,8 @@ const initialGameFormState = {
 const AdminPage = () => {
   const [games, setGames] = useState([]);
   const [tags, setTags] = useState([]);
-  const [loading, setLoading] = useState(true);
+  // 初始设置为 false，因为页面结构会立即渲染，加载状态仅用于游戏列表
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
@@ -95,7 +95,8 @@ const AdminPage = () => {
   const [newTagName, setNewTagName] = useState('');
 
   // 游戏列表的搜索、排序、分页状态 (与 HomePage 类似)
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(''); // 实时输入框的值
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState(''); // 防抖后的搜索值
   const [sortBy, setSortBy] = useState('updated_at');
   const [sortOrder, setSortOrder] = useState('desc');
   const [currentPage, setCurrentPage] = useState(1);
@@ -116,12 +117,24 @@ const AdminPage = () => {
     setSnackbarOpen(false);
   };
 
+  // 防抖 useEffect：当 searchQuery 变化时，等待一段时间更新 debouncedSearchQuery
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    },100); // 500ms 防抖延迟
+
+    // 清理函数：如果 searchQuery 在延迟时间内再次变化，则清除前一个定时器
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [searchQuery]); // 监听 searchQuery 的变化
+
   const loadGames = useCallback(async () => {
     try {
-      setLoading(true);
+      setLoading(true); // 仅在加载游戏时设置 loading 状态
       setError(null);
       const params = {
-        search: searchQuery,
+        search: debouncedSearchQuery, // 使用防抖后的搜索值
         sort_by: sortBy,
         order: sortOrder,
         page: currentPage,
@@ -135,9 +148,9 @@ const AdminPage = () => {
       setError("加载游戏失败: " + err.message);
       showSnackbar("加载游戏失败: " + err.message, 'error');
     } finally {
-      setLoading(false);
+      setLoading(false); // 无论成功失败都解除 loading
     }
-  }, [searchQuery, sortBy, sortOrder, currentPage, perPage]);
+  }, [debouncedSearchQuery, sortBy, sortOrder, currentPage, perPage]); // 依赖 debouncedSearchQuery
 
   const loadTags = useCallback(async () => {
     try {
@@ -150,6 +163,7 @@ const AdminPage = () => {
     }
   }, []);
 
+  // 当 debouncedSearchQuery 或其他过滤/排序/分页条件变化时，重新加载游戏
   useEffect(() => {
     loadGames();
     loadTags();
@@ -293,8 +307,8 @@ const AdminPage = () => {
 
   // --- 游戏列表过滤/排序/分页控制 (与 HomePage 相同) ---
   const handleSearchChange = (e) => {
-    setSearchQuery(e.target.value);
-    setCurrentPage(1);
+    setSearchQuery(e.target.value); // 立即更新 searchQuery
+    setCurrentPage(1); // 任何搜索输入都重置到第一页
   };
   const handleSortChange = (e) => {
     setSortBy(e.target.value);
@@ -325,14 +339,7 @@ const AdminPage = () => {
     { value: 'my_overall_score', label: '综合评分' },
   ];
 
-  if (loading) {
-    return (
-      <Container maxWidth="md" sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
-        <CircularProgress size={60} />
-        <Typography variant="h6" sx={{ ml: 2 }}>加载中...</Typography>
-      </Container>
-    );
-  }
+  // 移除了顶层的 if (loading) 返回块，确保页面结构始终存在
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
@@ -529,8 +536,8 @@ const AdminPage = () => {
           <TextField
             label="搜索游戏..."
             variant="outlined"
-            value={searchQuery}
-            onChange={handleSearchChange}
+            value={searchQuery} // 绑定到实时输入值
+            onChange={handleSearchChange} // 触发防抖
             InputProps={{
               startAdornment: (
                 <SearchIcon color="action" sx={{ mr: 1 }} />
@@ -588,7 +595,13 @@ const AdminPage = () => {
           </Stack>
         </Stack>
 
-        {games.length === 0 ? (
+        {/* 根据 loading 状态显示加载指示器或游戏列表 */}
+        {loading ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px', my: 4 }}>
+            <CircularProgress size={40} />
+            <Typography variant="body1" sx={{ ml: 2 }}>加载游戏...</Typography>
+          </Box>
+        ) : games.length === 0 ? (
           <Typography variant="body1" sx={{ textAlign: 'center', mt: 4 }}>
             没有找到游戏。
           </Typography>

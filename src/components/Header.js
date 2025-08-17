@@ -10,6 +10,8 @@ import Box from '@mui/material/Box';
 // 导入 Material-UI 图标
 import VideogameAssetIcon from '@mui/icons-material/VideogameAsset';
 
+import Button from '@mui/material/Button';
+
 const Header = () => {
   return (
     // AppBar 是 Material-UI 的应用栏组件，通常用于页首
@@ -51,11 +53,13 @@ const Header = () => {
               noWrap
               component="span"
             >
-              游戏评分站
+              7168B的小屋
             </Typography>
           </Link>
         </Box>
-
+        <Button color="inherit" component={Link} to="/admin">
+          管理员面板
+        </Button>
         {/* 未来你可以在这里添加其他导航链接或用户菜单，例如：
         <Button color="inherit" component={Link} to="/games">
           游戏
